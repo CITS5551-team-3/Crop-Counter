@@ -15,4 +15,6 @@ pip install geopandas
 pip install rasterio
 pip install pyshp
 pip install rasterstats
+pip install opencv-contrib-python
+pip install matplotlib
 ```
