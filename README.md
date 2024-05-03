@@ -7,7 +7,7 @@ drone imagery and advanced image processing techniques, this system will offer a
 accurate alternative to manual counting methods.
 
 ## Classical approach
-The classical approach makes use of the FIELDImagePy repository and requires the followinf libraries to be installed
+The classical approach makes use of the FIELDImagePy repository and requires the following libraries to be installed
 ```
 pip install shapely
 pip install fiona
