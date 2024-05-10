@@ -13,6 +13,7 @@ import pandas as pd
 import rasterio
 import time
 import cv2
+import math
 # Importing necessary programs from the libraries
 from rasterio.plot import show
 from rasterio.transform import from_origin
@@ -27,7 +28,7 @@ from matplotlib import pyplot as plt
 # This section may be added later once crop data has been collected
 
 # importing the image to be analysed
-with rasterio.open("Test_Images/Test_Image_8.tif", 'r') as raster2:
+with rasterio.open("Test_Images/Img_RGB.jpg", 'r') as raster2:
     raster2 = cast(rasterio.DatasetReader, raster2)
 
     bandCount = cast(int, raster2.count)
@@ -57,15 +58,15 @@ NIR = np.array([])
 RE = np.array([])
 
 if (bandCount >= 1):
-    Blue = (cast(np.ndarray, Blue16bit) / 65535).astype(float)
+    Blue = (cast(np.ndarray, Blue16bit) / 255).astype(float)
 if (bandCount >= 2):
-    Green = (cast(np.ndarray, Green16bit) / 65535).astype(float)
+    Green = (cast(np.ndarray, Green16bit) / 255).astype(float)
 if (bandCount >= 3):
-    Red = (cast(np.ndarray, Red16bit) / 65535).astype(float)
+    Red = (cast(np.ndarray, Red16bit) / 255).astype(float)
 if (bandCount >= 4):
-    NIR = (cast(np.ndarray, NIR16bit) / 65535).astype(float)
+    NIR = (cast(np.ndarray, NIR16bit) / 255).astype(float)
 if (bandCount >= 5):
-    RE = (cast(np.ndarray, RE16bit) / 65535).astype(float)
+    RE = (cast(np.ndarray, RE16bit) / 255).astype(float)
 
 # This next section involves the calculation of Vegetation indices. 
 # Based on this article https://en.wikipedia.org/wiki/Vegetation_index#:~:text=A%20vegetation%20index%20(VI)%20is,activity%20and%20canopy%20structural%20variations.
@@ -86,7 +87,7 @@ np.seterr(divide='ignore', invalid='ignore')
 # RGB only
 if (bandCount >= 3):
     NGRDI_Orig = ((Green).astype(float) - (Red).astype(float))/((Green).astype(float) + (Red).astype(float))
-    HUE = np.arctan((2 * (Red - Green - Blue) )/ (30.5*(Green - Blue)))
+    HUE = np.arctan((2 * (Red.astype(float)  - Green.astype(float)  - Blue.astype(float) ) )/ (30.5*(Green.astype(float)  - Blue.astype(float) )))
 
 # NIR based
 if (bandCount >= 4):
@@ -134,11 +135,12 @@ if bandCount >= 4:
 # with the test data found (Test_Image_8) GNDVI seems particularly good at isolating the plants, but with a value of 0 showing the plant and 1 showing shadow
 # GNDVI also seem to be best in this image for isolating or ignoring shadows. the threshold has also been adjusted based on observation
 # 0.15 removes a good amount of the soil and less green crops
-
+hue_vals = ((cast(np.ndarray, HUE) - (math.pi/2))/ -math.pi *255).astype(int)
 
 # RGB only
 if (bandCount >= 3):
-    NGRDI = np.where(NGRDI_Orig > 0, NGRDI_Orig, -9999)
+    NGRDI = np.where(NGRDI_Orig > 0.15, NGRDI_Orig, -9999)
+    hue_excl = np.where(NGRDI_Orig > 0.15, hue_vals, -math.inf)
 
 # NIR based
 if (bandCount >= 4):
@@ -160,8 +162,8 @@ if (bandCount >= 5):
     MDD = np.where(NGRDI_Orig > 0, MDD_Orig, -9999)
     MARI = np.where(NGRDI_Orig > 0, MARI_Orig, -9999)
 
-
 # this image scale the 0 - 1 values to a 255 greyscale
 # sanity check to make sure the soil exclusion is working, currently no change since NGRDI_Orig already has been classified by itself:
-img_vals = (cast(np.ndarray, GNDVI) * 255).astype(int)
-cv2.imwrite("Test_Images/Soil_Exclusion_Test.jpg", img_vals)
+#img_vals = ((cast(np.ndarray, hue_excl) + (math.pi/2))/ math.pi *255).astype(int)
+cv2.imwrite("Test_Images/Hue_Exclusiont.jpg", hue_excl)
+cv2.imwrite("Test_Images/NGRDI.jpg", NGRDI*255)
