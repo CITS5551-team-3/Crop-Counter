@@ -1,0 +1,8 @@
+geotiff==0.2.10
+numba==0.59.0
+numpy==1.26.3
+opencv_python==4.9.0.80
+Pillow==10.2.0
+psutil==5.9.8
+rasterio==1.3.10
+scikit-image==0.23.2
