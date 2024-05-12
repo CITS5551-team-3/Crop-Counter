@@ -450,7 +450,7 @@ def find_plots_geotiff(tiff_path: str, exp_w, exp_h, r_tolerance=0.15, h_toleran
 
 # TODO: comment the code
 
-# Plot separation is done by applying ExGI filtering, binarisation, and fitting rectangles into the binarized image.
+# Plot identification is done by applying ExGI filtering, binarisation, and fitting rectangles into the binarised image.
 # This method currently has a limitation: the rectangles must be parallel to the image boundaries.
 # The GeoTIFF file can potentially be several gigabytes which is too large to fit into the memory. But fortunately
 # the geotiff package has done the memory management for us, allowing access to only a small portion of the image
@@ -460,10 +460,11 @@ def find_plots_geotiff(tiff_path: str, exp_w, exp_h, r_tolerance=0.15, h_toleran
 
 def main():
     tiff_file = "data/plots.tif"  # https://drive.google.com/file/d/1Hnz7eY6rajJGGptk3Lw9NWmL5W6uf50Z/view?usp=sharing
+    tiff_file = "data/plots_with_weed.tif"  # https://drive.google.com/file/d/1CUoaFNcektBEsoaz_LDVz6akUnrqgvBL/view?usp=sharing
     expected_plot_width, expected_plot_height = 3280, 600  # 420/150,1100/150
-    zarr = cv2.imread("data/plot2.png")
+    arr = cv2.imread("data/plots2.png")
 
-    rgb_img = np.array(zarr)[:, :, :3]
+    rgb_img = np.array(arr)[:, :, :3]
     rgb_img = cv2.cvtColor(rgb_img, cv2.COLOR_BGR2RGB)
 
     # find_plots(rgb_img, expected_plot_width=expected_plot_width, expected_plot_height=expected_plot_height, write_to_file=True)
