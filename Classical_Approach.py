@@ -28,7 +28,7 @@ from matplotlib import pyplot as plt
 # This section may be added later once crop data has been collected
 
 # importing the image to be analysed
-with rasterio.open("Test_Images/Img_RGB.jpg", 'r') as raster2:
+with rasterio.open("Test_Images/Test_Image_6.jpg", 'r') as raster2:
     raster2 = cast(rasterio.DatasetReader, raster2)
 
     bandCount = cast(int, raster2.count)
@@ -87,6 +87,7 @@ np.seterr(divide='ignore', invalid='ignore')
 # RGB only
 if (bandCount >= 3):
     NGRDI_Orig = ((Green).astype(float) - (Red).astype(float))/((Green).astype(float) + (Red).astype(float))
+    ExGI_Orig = ((2*(Green).astype(float)) - ((Red).astype(float) + (Blue).astype(float)))
     HUE = np.arctan((2 * (Red.astype(float)  - Green.astype(float)  - Blue.astype(float) ) )/ (30.5*(Green.astype(float)  - Blue.astype(float) )))
 
 # NIR based
@@ -139,8 +140,10 @@ hue_vals = ((cast(np.ndarray, HUE) - (math.pi/2))/ -math.pi *255).astype(int)
 
 # RGB only
 if (bandCount >= 3):
-    NGRDI = np.where(NGRDI_Orig > 0.15, NGRDI_Orig, -9999)
-    hue_excl = np.where(NGRDI_Orig > 0.15, hue_vals, -math.inf)
+    NGRDI = np.where(ExGI_Orig > 0.05, NGRDI_Orig*255, -9999)
+    
+    hue_excl = np.where(ExGI_Orig > 0, hue_vals, -math.inf)
+    ExGI = np.where(ExGI_Orig >0.05, ExGI_Orig*255, -math.inf)
 
 # NIR based
 if (bandCount >= 4):
@@ -165,5 +168,5 @@ if (bandCount >= 5):
 # this image scale the 0 - 1 values to a 255 greyscale
 # sanity check to make sure the soil exclusion is working, currently no change since NGRDI_Orig already has been classified by itself:
 #img_vals = ((cast(np.ndarray, hue_excl) + (math.pi/2))/ math.pi *255).astype(int)
-cv2.imwrite("Test_Images/Hue_Exclusiont.jpg", hue_excl)
-cv2.imwrite("Test_Images/NGRDI.jpg", NGRDI*255)
+cv2.imwrite("Test_Images/ExGI_excl.jpg", ExGI)
+cv2.imwrite("Test_Images/NGRDI.jpg", NGRDI)
