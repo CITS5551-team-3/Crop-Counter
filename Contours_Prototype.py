@@ -33,7 +33,7 @@ def createIm(img: np.ndarray, name: str, parent: str):
     cv2.imwrite(file_path, img)
 
 #open image and return RGB tuple
-def openIm(path: str, IMAGE_BITS: int =8):
+def openIm(path: str, IMAGE_BITS: int =8) -> np.ndarray:
 
     #check if the input file is a supported format
     red_channel = math.inf
@@ -44,9 +44,9 @@ def openIm(path: str, IMAGE_BITS: int =8):
     _, file_extension = os.path.splitext(path)
     file_extension = file_extension[1:].lower()
     if file_extension in {"jpg", "jpeg", "jpe", "jif", "jfif", "jfi"}:
-        red_channel = 1
+        red_channel = 3
         green_channel = 2
-        blue_channel = 3
+        blue_channel = 1
     else:
         raise Exception(f"image file extension '{file_extension}' not currently supported")
     
@@ -78,21 +78,21 @@ def openIm(path: str, IMAGE_BITS: int =8):
     green: np.ndarray
     red: np.ndarray
 
-    image_max_value = (2 ** IMAGE_BITS) - 1
+    #image_max_value = (2 ** IMAGE_BITS) - 1
 
     if blue_raw is not None:
-        blue = (cast(np.ndarray, blue_raw) / image_max_value).astype(float)
+        blue = (cast(np.ndarray, blue_raw) / 255).astype(float)
 
     if green_raw is not None:
-        green = (cast(np.ndarray, green_raw) / image_max_value).astype(float)
+        green = (cast(np.ndarray, green_raw) / 255).astype(float)
 
     if red_raw is not None:
-        red = (cast(np.ndarray, red_raw) / image_max_value).astype(float)
+        red = (cast(np.ndarray, red_raw) / 255).astype(float)
 
 
-    return(blue, green, red)
+    return(Exclude_Soil(blue, green, red))
 
-def Exclude_Soil(Blue: np.ndarray, Green: np.ndarray, Red: np.ndarray):
+def Exclude_Soil(Blue: np.ndarray, Green: np.ndarray, Red: np.ndarray) -> np.ndarray:
 
     
     # Dealing with the situations division by zero
@@ -119,20 +119,19 @@ def Exclude_Soil(Blue: np.ndarray, Green: np.ndarray, Red: np.ndarray):
     return NGRDI
 
 def countContours(img_path: str):
-    print(os.path.join(outDir, f"{img_path}.jpg"))
     #read in the soil excluded image
     img_vals = cv2.imread(os.path.join(outDir, f"{img_path}.jpg"))
     #ensure the image is greyscale
     imgrey = cv2.cvtColor(img_vals, cv2.COLOR_BGR2GRAY)
     #convert the greyscale image to binary
-    ret, thresh  = cv2.threshold(imgrey, 10, 255, cv2.THRESH_BINARY)
+    ret, thresh  = cv2.threshold(imgrey, 0, 255, cv2.THRESH_BINARY)
     #define kernels for eorsion/dilation
-    kernel1= np.ones((4,4), np.uint8)
+    kernel1= np.ones((2,2), np.uint8)
     kernel2 = np.ones((3,3), np.uint8)
 
     #erode image to remove noise and dilate to restore larger shapes
-    eroded = cv2.erode(thresh, kernel1, iterations = 2)
-    dilated = cv2.dilate(eroded, kernel2, iterations = 8)
+    eroded = cv2.erode(thresh, kernel1, iterations = 8)
+    dilated = cv2.dilate(eroded, kernel2, iterations = 9)
 
     #find contours in the image
     contours, heirachy = cv2.findContours(dilated, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
@@ -149,9 +148,9 @@ if(os.path.exists(inDir)):
     files = 0
     for file in os.listdir(inDir):
         filename = os.fsdecode(file)
-        b,g,r = openIm(os.path.join(inDir, filename))
+        ngrdi= openIm(os.path.join(inDir, filename))
 
-        ngrdi = Exclude_Soil(b, g, r)
+         
         createIm(ngrdi, "Masked_NGRDI", Path(filename).stem)
 
 

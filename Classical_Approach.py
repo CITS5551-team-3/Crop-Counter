@@ -28,7 +28,7 @@ from matplotlib import pyplot as plt
 # This section may be added later once crop data has been collected
 
 # importing the image to be analysed
-with rasterio.open("Test_Images/Test_Image_6.jpg", 'r') as raster2:
+with rasterio.open("Input_Images/Img_RGB.jpg", 'r') as raster2:
     raster2 = cast(rasterio.DatasetReader, raster2)
 
     bandCount = cast(int, raster2.count)
@@ -88,29 +88,29 @@ np.seterr(divide='ignore', invalid='ignore')
 if (bandCount >= 3):
     NGRDI_Orig = ((Green).astype(float) - (Red).astype(float))/((Green).astype(float) + (Red).astype(float))
     ExGI_Orig = ((2*(Green).astype(float)) - ((Red).astype(float) + (Blue).astype(float)))
-    HUE = np.arctan((2 * (Red.astype(float)  - Green.astype(float)  - Blue.astype(float) ) )/ (30.5*(Green.astype(float)  - Blue.astype(float) )))
+    #HUE = np.arctan((2 * (Red.astype(float)  - Green.astype(float)  - Blue.astype(float) ) )/ (30.5*(Green.astype(float)  - Blue.astype(float) )))
 
 # NIR based
-if (bandCount >= 4):
-    NDVI_Orig = (NIR.astype(float) - Red.astype(float)) / (NIR.astype(float) + Red.astype(float))
-    GNDVI_Orig = (NIR.astype(float) - Green.astype(float)) / (NIR.astype(float) + Green.astype(float))
-    ENDVI_Orig = (NIR.astype(float) + Green.astype(float) - 2*Blue.astype(float)) / (NIR.astype(float) + Green.astype(float) + 2*Blue.astype(float))
-    SIPI_Orig = (NIR.astype(float)-Blue.astype(float))/(NIR.astype(float) + Red.astype(float))
-    NLI_Orig = (((NIR.astype(float))**2) - Red.astype(float)) / (((NIR.astype(float))**2) + Red.astype(float))
-    SR_Orig = NIR.astype(float)/Red.astype(float)
-    DVI_Orig = NIR.astype(float) - Red.astype(float)
-    RDVI_Orig = (NIR.astype(float) - Red.astype(float)) / ((NIR.astype(float) + Red.astype(float))**(1/2))
+#if (bandCount >= 4):
+   # NDVI_Orig = (NIR.astype(float) - Red.astype(float)) / (NIR.astype(float) + Red.astype(float))
+    #GNDVI_Orig = (NIR.astype(float) - Green.astype(float)) / (NIR.astype(float) + Green.astype(float))
+   # ENDVI_Orig = (NIR.astype(float) + Green.astype(float) - 2*Blue.astype(float)) / (NIR.astype(float) + Green.astype(float) + 2*Blue.astype(float))
+   # SIPI_Orig = (NIR.astype(float)-Blue.astype(float))/(NIR.astype(float) + Red.astype(float))
+   # NLI_Orig = (((NIR.astype(float))**2) - Red.astype(float)) / (((NIR.astype(float))**2) + Red.astype(float))
+   # SR_Orig = NIR.astype(float)/Red.astype(float)
+   # DVI_Orig = NIR.astype(float) - Red.astype(float)
+   # RDVI_Orig = (NIR.astype(float) - Red.astype(float)) / ((NIR.astype(float) + Red.astype(float))**(1/2))
 
 # RE based
-if (bandCount >= 5):
-    RENDVI_Orig = (RE.astype(float) - Red.astype(float)) / (RE.astype(float) + Red.astype(float))
-    NDRE_Orig = (NIR.astype(float) - RE.astype(float)) / (NIR.astype(float) + RE.astype(float))
-    NNIR_Orig = NIR.astype(float) / (NIR.astype(float) + (RE.astype(float) + Green.astype(float)))
-    MCARI_Orig = (RE.astype(float)-Red.astype(float)) - 2*(RE.astype(float) - Green.astype(float))*(RE.astype(float) / Red.astype(float))
-    MDD_Orig = (NIR.astype(float) - RE.astype(float)) - (RE.astype(float) - Green.astype(float))
-    MARI_Orig = ((1/Green.astype(float))-(1/RE.astype(float)))*NIR.astype(float)
+#if (bandCount >= 5):
+   # RENDVI_Orig = (RE.astype(float) - Red.astype(float)) / (RE.astype(float) + Red.astype(float))
+   # NDRE_Orig = (NIR.astype(float) - RE.astype(float)) / (NIR.astype(float) + RE.astype(float))
+   # NNIR_Orig = NIR.astype(float) / (NIR.astype(float) + (RE.astype(float) + Green.astype(float)))
+   # MCARI_Orig = (RE.astype(float)-Red.astype(float)) - 2*(RE.astype(float) - Green.astype(float))*(RE.astype(float) / Red.astype(float))
+   # MDD_Orig = (NIR.astype(float) - RE.astype(float)) - (RE.astype(float) - Green.astype(float))
+   # MARI_Orig = ((1/Green.astype(float))-(1/RE.astype(float)))*NIR.astype(float)
 
-print(bandCount)
+#print(bandCount)
 
 if bandCount >= 4:
     # these images scale the 0 - 1 values to a 255 greyscale
@@ -136,37 +136,38 @@ if bandCount >= 4:
 # with the test data found (Test_Image_8) GNDVI seems particularly good at isolating the plants, but with a value of 0 showing the plant and 1 showing shadow
 # GNDVI also seem to be best in this image for isolating or ignoring shadows. the threshold has also been adjusted based on observation
 # 0.15 removes a good amount of the soil and less green crops
-hue_vals = ((cast(np.ndarray, HUE) - (math.pi/2))/ -math.pi *255).astype(int)
+#hue_vals = ((cast(np.ndarray, HUE) - (math.pi/2))/ -math.pi *255).astype(int)
 
 # RGB only
 if (bandCount >= 3):
     NGRDI = np.where(ExGI_Orig > 0.05, NGRDI_Orig*255, -9999)
     
-    hue_excl = np.where(ExGI_Orig > 0, hue_vals, -math.inf)
-    ExGI = np.where(ExGI_Orig >0.05, ExGI_Orig*255, -math.inf)
+   # hue_excl = np.where(ExGI_Orig > 0, hue_vals, -math.inf)
+    #ExGI = np.where(ExGI_Orig >0.05, ExGI_Orig*255, -math.inf)
 
 # NIR based
-if (bandCount >= 4):
-    NDVI = np.where(NGRDI_Orig > 0, NDVI_Orig, -9999)
-    GNDVI = np.where(NGRDI_Orig > 0.15, (1-GNDVI_Orig), -9999)
-    ENDVI = np.where(NGRDI_Orig > 0, ENDVI_Orig, -9999)
-    SIPI = np.where(NGRDI_Orig > 0, SIPI_Orig, -9999)
-    NLI = np.where(NGRDI_Orig > 0, NLI_Orig, -9999)
-    SR = np.where(NGRDI_Orig > 0, SR_Orig, -9999)
-    DVI = np.where(NGRDI_Orig > 0, DVI_Orig, -9999)
-    RDVI = np.where(NGRDI_Orig > 0, RDVI_Orig, -9999)
+
+#if (bandCount >= 4):
+ #   NDVI = np.where(NGRDI_Orig > 0, NDVI_Orig, -9999)
+ #   GNDVI = np.where(NGRDI_Orig > 0.15, (1-GNDVI_Orig), -9999)
+ #   ENDVI = np.where(NGRDI_Orig > 0, ENDVI_Orig, -9999)
+ #   SIPI = np.where(NGRDI_Orig > 0, SIPI_Orig, -9999)
+  #  NLI = np.where(NGRDI_Orig > 0, NLI_Orig, -9999)
+  #  SR = np.where(NGRDI_Orig > 0, SR_Orig, -9999)
+  #  DVI = np.where(NGRDI_Orig > 0, DVI_Orig, -9999)
+   # RDVI = np.where(NGRDI_Orig > 0, RDVI_Orig, -9999)
 
 # RE based
-if (bandCount >= 5):
-    RENDVI = np.where(NGRDI_Orig > 0, RENDVI_Orig, -9999)
-    NDRE = np.where(NGRDI_Orig > 0, NDRE_Orig, -9999)
-    NNIR = np.where(NGRDI_Orig > 0, NNIR_Orig, -9999)
-    MCARI = np.where(NGRDI_Orig > 0, MCARI_Orig, -9999)
-    MDD = np.where(NGRDI_Orig > 0, MDD_Orig, -9999)
-    MARI = np.where(NGRDI_Orig > 0, MARI_Orig, -9999)
+#if (bandCount >= 5):
+    #RENDVI = np.where(NGRDI_Orig > 0, RENDVI_Orig, -9999)
+    #NDRE = np.where(NGRDI_Orig > 0, NDRE_Orig, -9999)
+    #NNIR = np.where(NGRDI_Orig > 0, NNIR_Orig, -9999)
+    #MCARI = np.where(NGRDI_Orig > 0, MCARI_Orig, -9999)
+    #MDD = np.where(NGRDI_Orig > 0, MDD_Orig, -9999)
+    #MARI = np.where(NGRDI_Orig > 0, MARI_Orig, -9999)
 
 # this image scale the 0 - 1 values to a 255 greyscale
 # sanity check to make sure the soil exclusion is working, currently no change since NGRDI_Orig already has been classified by itself:
 #img_vals = ((cast(np.ndarray, hue_excl) + (math.pi/2))/ math.pi *255).astype(int)
-cv2.imwrite("Test_Images/ExGI_excl.jpg", ExGI)
+#cv2.imwrite("Test_Images/ExGI_excl.jpg", ExGI)
 cv2.imwrite("Test_Images/NGRDI.jpg", NGRDI)
