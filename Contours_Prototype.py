@@ -1,27 +1,11 @@
 from typing import cast
-import geopandas as gpd
 import rasterio.mask
-import fiona
 import os
 import numpy as np
-import shapefile
-import rasterstats
-import matplotlib.pyplot as plt
-import statistics
-import pandas as pd
 import rasterio
-import time
 import cv2
 import math
 from pathlib import Path
-# Importing necessary programs from the libraries
-from rasterio.plot import show
-from rasterio.transform import from_origin
-from rasterio.crs import CRS
-from rasterio import features
-from rasterstats import zonal_stats
-from matplotlib.colors import ListedColormap
-from matplotlib import pyplot as plt
 
 #input and output directories
 inDir = "./Input_Images"
