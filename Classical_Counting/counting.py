@@ -1,7 +1,5 @@
 import cv2
 import numpy as np
-import os
-from IPython.display import Image, display
 
 
 im = cv2.imread('Test_Images/temp_ndvi.jpg')
