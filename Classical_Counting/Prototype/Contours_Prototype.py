@@ -74,9 +74,9 @@ def openIm(path: str, IMAGE_BITS: int =8) -> np.ndarray:
         red = (cast(np.ndarray, red_raw) / 255).astype(float)
 
 
-    return(Exclude_Soil(blue, green, red))
+    return(Exclude_Soil(blue, green, red, 0.05))
 
-def Exclude_Soil(Blue: np.ndarray, Green: np.ndarray, Red: np.ndarray) -> np.ndarray:
+def Exclude_Soil(Blue: np.ndarray, Green: np.ndarray, Red: np.ndarray, thresh: float) -> np.ndarray:
 
     
     # Dealing with the situations division by zero
@@ -98,11 +98,11 @@ def Exclude_Soil(Blue: np.ndarray, Green: np.ndarray, Red: np.ndarray) -> np.nda
     ExGI_Orig = ((2*(Green).astype(float)) - ((Red).astype(float) + (Blue).astype(float)))
 
     #output the NGRDI Vegetation index masked by the ExGI index to remove soil
-    NGRDI = np.where(ExGI_Orig > 0.05, NGRDI_Orig*255, -math.inf)
+    NGRDI = np.where(ExGI_Orig > thresh, NGRDI_Orig*255, -math.inf)
 
     return NGRDI
 
-def countContours(img_path: str):
+def countContours(img_path: str, errosion_size: int, errosion_quant: int, dilation_size: int, dilation_quant: int):
     #read in the soil excluded image
     img_vals = cv2.imread(os.path.join(outDir, f"{img_path}.jpg"))
     #ensure the image is greyscale
@@ -110,12 +110,12 @@ def countContours(img_path: str):
     #convert the greyscale image to binary
     ret, thresh  = cv2.threshold(imgrey, 0, 255, cv2.THRESH_BINARY)
     #define kernels for eorsion/dilation
-    kernel1= np.ones((2,2), np.uint8)
-    kernel2 = np.ones((3,3), np.uint8)
+    kernel1= np.ones((errosion_size,errosion_size), np.uint8)
+    kernel2 = np.ones((dilation_size,dilation_size), np.uint8)
 
     #erode image to remove noise and dilate to restore larger shapes
-    eroded = cv2.erode(thresh, kernel1, iterations = 8)
-    dilated = cv2.dilate(eroded, kernel2, iterations = 9)
+    eroded = cv2.erode(thresh, kernel1, iterations = errosion_quant)
+    dilated = cv2.dilate(eroded, kernel2, iterations = dilation_quant)
 
     #find contours in the image
     contours, heirachy = cv2.findContours(dilated, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
@@ -138,7 +138,7 @@ if(os.path.exists(inDir)):
         createIm(ngrdi, "Masked_NGRDI", Path(filename).stem)
 
 
-        count, contours = countContours(Path(filename).stem + "_" + "Masked_NGRDI")
+        count, contours = countContours(Path(filename).stem + "_" + "Masked_NGRDI", 2, 8, 3, 9)
         createIm(contours, "contours", Path(filename).stem)
 
         print (f"{filename}: contains {count} plants")
